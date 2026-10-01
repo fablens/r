@@ -1,0 +1,161 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>배관 점검</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1a1a18;--mut:#6b6b66;--line:#e3e3df;--card:#fff;
+      --ok:#0f7a4a;--okbg:#e9f6ef;--ng:#b3261e;--ngbg:#fdecea;--wa:#8a5a00;--wabg:#fdf3e2;--ac:#1a4fd6}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#17171a;--fg:#e9e9e6;--mut:#9a9a95;
+      --line:#2e2e33;--card:#1f1f23;--okbg:#10291e;--ok:#4cc38a;--ngbg:#2d1716;--ng:#f2756a;
+      --wabg:#2b2210;--wa:#e0b057;--ac:#7aa2ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,"Malgun Gothic",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 14px}
+label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
+input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+      background:var(--bg);color:var(--fg);font:13px ui-monospace,Menlo,Consolas,monospace}
+.hint{font-size:12px;color:var(--mut);margin:6px 0 0}
+button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:11px 20px;
+       font-size:15px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:12px;align-items:center;margin:18px 0 0;flex-wrap:wrap}
+.t{display:flex;gap:11px;padding:12px 14px;border-radius:8px;border:1px solid var(--line);margin:0 0 9px}
+.t b{display:block;font-size:14px}
+.t .d{font-size:12.5px;color:var(--mut);margin-top:3px;word-break:break-all}
+.t.ok{background:var(--okbg);border-color:transparent}.t.ok .ic{color:var(--ok)}
+.t.ng{background:var(--ngbg);border-color:transparent}.t.ng .ic{color:var(--ng)}
+.t.wa{background:var(--wabg);border-color:transparent}.t.wa .ic{color:var(--wa)}
+.ic{font-weight:700;flex:0 0 18px}
+code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12.5px}
+.ml{margin-top:10px;font-size:12.5px;color:var(--mut)}
+.ml span{display:inline-block;background:var(--bg);border:1px solid var(--line);
+         border-radius:5px;padding:2px 7px;margin:3px 4px 0 0;font-family:ui-monospace,monospace}
+</style></head><body><div class="wrap">
+<h1>배관 점검</h1>
+<p class="sub">만들기 전에 통신 네 가닥이 살아 있는지 본다. 하나라도 빨간색이면 그걸 먼저 고친다.</p>
+
+<div class="card">
+  <label for="k1">조달청 serviceKey</label>
+  <input id="k1" placeholder="data.go.kr 에서 발급받은 Decoding 키" autocomplete="off" spellcheck="false">
+  <p class="hint">공공데이터포털 &rarr; 마이페이지 &rarr; 활용신청 현황 &rarr; 일반 인증키(Decoding)</p>
+</div>
+<div class="card">
+  <label for="k2">Gemini API 키</label>
+  <input id="k2" placeholder="aistudio.google.com 에서 발급" autocomplete="off" spellcheck="false">
+  <p class="hint">이 페이지는 키를 어디에도 저장하지 않는다. 창을 닫으면 사라진다.</p>
+</div>
+
+<div class="row"><button id="go">점검 시작</button><span id="st" class="hint"></span></div>
+<div id="out" style="margin-top:20px"></div>
+</div>
+<script>
+const $=s=>document.getElementById(s), out=$('out');
+function tile(cls,ic,title,desc){const d=document.createElement('div');
+  d.className='t '+cls;d.innerHTML='<span class="ic">'+ic+'</span><div><b></b><div class="d"></div></div>';
+  d.querySelector('b').textContent=title; d.querySelector('.d').textContent=desc||'';
+  out.appendChild(d); return d;}
+const ok=(t,d)=>tile('ok','O',t,d), ng=(t,d)=>tile('ng','X',t,d), wa=(t,d)=>tile('wa','!',t,d);
+
+function ym(d){const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'0000';}
+
+async function run(){
+  out.innerHTML=''; $('go').disabled=true; $('st').textContent='…';
+  const k1=$('k1').value.trim(), k2=$('k2').value.trim();
+  let link=null;
+
+  /* 1. 나라장터 공고 조회 */
+  if(!k1) wa('1. 나라장터 공고 조회 — 건너뜀','조달청 키를 넣지 않았다.');
+  else try{
+    const to=new Date(), fr=new Date(Date.now()-27*864e5);
+    const u='https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch'
+      +'?serviceKey='+encodeURIComponent(k1)+'&pageNo=1&numOfRows=100&inqryDiv=1&type=json'
+      +'&inqryBgnDt='+ym(fr)+'&inqryEndDt='+ym(to)+'&bidNtceNm='+encodeURIComponent('행사');
+    const r=await fetch(u), txt=await r.text();
+    let j=null; try{j=JSON.parse(txt)}catch(e){}
+    if(!j||!j.response){ ng('1. 나라장터 공고 조회 실패','응답이 JSON 이 아니다 — '+txt.slice(0,160)); }
+    else{
+      const h=j.response.header||{}, b=j.response.body||{};
+      const code=h.resultCode, msg=h.resultMsg;
+      if(code!=='00'){ ng('1. 나라장터 공고 조회 — 오류 '+code, msg
+        +(code==='07'?'  (조회 범위가 1개월을 넘었다. 30일씩 쪼개야 한다.)':'')); }
+      else{
+        const it=Array.isArray(b.items)?b.items:(b.items?[b.items]:[]);
+        ok('1. 나라장터 공고 조회','최근 27일 "행사" '+b.totalCount+'건 · 이번 페이지 '+it.length+'건');
+        let wf=0;
+        for(const r2 of it){ for(let i=1;i<=10;i++){
+          const n=r2['ntceSpecFileNm'+i], d=r2['ntceSpecDocUrl'+i];
+          if(n&&d){ wf++; if(!link&&/과업|제안요청|사양/.test(n)) link={n:n,d:d}; break; } } }
+        (wf? ok : wa)('2. 공고 첨부파일 목록', it.length+'건 중 '+wf+'건에 첨부 · 과업지시서류 '+(link?'찾음':'없음'));
+      }
+    }
+  }catch(e){ ng('1. 나라장터 공고 조회 — 통신 실패', String(e)
+    +'  (CORS 가 아니라 방화벽일 가능성이 높다. 핸드폰 테더링으로 바꿔 보라.)'); }
+
+  /* 3. 첨부 실제 다운로드 */
+  if(!link) wa('3. 첨부 다운로드 — 건너뜀','받아 볼 과업지시서 첨부를 찾지 못했다.');
+  else try{
+    const r=await fetch(link.d), b=await r.arrayBuffer();
+    const m=Array.from(new Uint8Array(b.slice(0,4))).map(x=>x.toString(16).padStart(2,'0')).join('');
+    const kind = m==='504b0304' ? 'ZIP (hwpx/docx)' : m.startsWith('d0cf11e0') ? 'OLE2 (구 hwp/doc)'
+               : m==='25504446' ? 'PDF' : '알 수 없음 '+m;
+    const good = r.status===200 && b.byteLength>1000;
+    (good?ok:ng)('3. 첨부 다운로드',
+      link.n.slice(0,42)+' · '+r.status+' · '+(b.byteLength/1024).toFixed(0)+'KB · '+kind);
+    if(good) tile('ok','·','→ 브라우저에서 첨부를 바로 읽을 수 있다',
+      '서버에서 받아 올 필요가 없다. CORS 가 열려 있다.');
+  }catch(e){ ng('3. 첨부 다운로드 실패', String(e)); }
+
+  /* 4. Gemini */
+  if(!k2) wa('4. Gemini — 건너뜀','Gemini 키를 넣지 않았다.');
+  else try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k2));
+    const j=await r.json();
+    if(!r.ok){ ng('4. Gemini 키 거부 — '+r.status, (j.error&&j.error.message||'').slice(0,200)); }
+    else{
+      const all=(j.models||[]).map(m=>m.name.replace('models/',''))
+        .filter(n=>/flash|pro/.test(n) && !/image|tts|embedding/.test(n));
+      ok('4. Gemini 키 확인','쓸 수 있는 모델 '+all.length+'개');
+      const d=document.createElement('div'); d.className='ml';
+      d.innerHTML='<b style="color:var(--fg)">모델 이름은 여기서 골라 쓴다 (코드에 박지 말 것)</b><br>'
+        +all.slice(0,14).map(n=>'<span>'+n+'</span>').join('');
+      out.appendChild(d);
+
+      /* 실제로 생성되는 모델을 위에서부터 찾는다 */
+      const cand=all.filter(n=>/flash/.test(n)).slice(0,6);
+      let won=null, tried=[];
+      for(const m of cand){
+        try{
+          const rr=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+m
+            +':generateContent?key='+encodeURIComponent(k2),{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({contents:[{role:'user',parts:[{text:
+              'JSON만 반환. {"문안":["공문체 한 문장을 40자 이상으로 쓴다"]}'}]}],
+              generationConfig:{temperature:.35,maxOutputTokens:16384,
+                responseMimeType:'application/json',thinkingConfig:{thinkingLevel:'low'}}})});
+          const jj=await rr.json();
+          if(!rr.ok){ tried.push(m+' → '+rr.status); continue; }
+          const c=(jj.candidates||[])[0]||{};
+          const t=((c.content&&c.content.parts)||[]).map(p=>p.text||'').join('');
+          if(c.finishReason==='MAX_TOKENS'){ tried.push(m+' → 출력예산 초과'); continue; }
+          JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}')+1));
+          const u=jj.usageMetadata||{};
+          won={m:m, fin:c.finishReason, th:u.thoughtsTokenCount||0, ca:u.candidatesTokenCount||0};
+          break;
+        }catch(e){ tried.push(m+' → '+String(e).slice(0,40)); }
+      }
+      if(won) ok('5. Gemini 실제 생성 + JSON 모드',
+        won.m+' · '+won.fin+' · 사고 '+won.th+'토큰 + 본문 '+won.ca+'토큰');
+      else ng('5. Gemini 실제 생성 실패', tried.join(' / ').slice(0,260));
+      if(won) tile('ok','·','→ 이 모델 이름을 쓴다: '+won.m,
+        '사고 토큰도 출력 예산에 같이 잡힌다. maxOutputTokens 를 넉넉히 두지 않으면 '
+        +'에러가 아니라 JSON 이 중간에 잘려 조용히 실패한다.');
+    }
+  }catch(e){ ng('4. Gemini 통신 실패', String(e)); }
+
+  $('go').disabled=false; $('st').textContent='';
+}
+$('go').addEventListener('click',run);
+</script></body></html>

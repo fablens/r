@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>해커톤 당일 워크플로우</title>
+<style>
+:root{
+--cream:#FBF5E9;--paper:#fff;--ink:#2A2F38;--muted:#7C8593;--line:#ECE4D5;
+--navy:#22314A;--yellow:#F7D64A;--yellowS:#FDF2C6;--yellowD:#8A6D06;
+--blue:#3D6FB4;--blueS:#E8F0FA;--green:#4F8159;--greenS:#E9F3EA;
+--coral:#C0392B;--coralS:#FBEAE7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-size:15px;line-height:1.7;
+word-break:keep-all;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:30px 20px 80px}
+header{margin-bottom:26px}
+h1{font-size:27px;letter-spacing:-.02em;margin:0 0 6px}
+header p{margin:0;color:var(--muted);font-size:14px}
+h2{font-size:19px;margin:34px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--navy);
+display:flex;align-items:center;gap:9px}
+h2 .n{background:var(--navy);color:#fff;width:25px;height:25px;border-radius:7px;
+font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+h3{font-size:15.5px;margin:20px 0 7px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:17px 19px;margin:13px 0}
+.ok{background:var(--greenS);border-color:#CFE3D2}
+.no{background:var(--coralS);border-color:#F0CFC9}
+.warn{background:var(--yellowS);border-color:#EFDFA8}
+.blue{background:var(--blueS);border-color:#D2E0F0}
+table{width:100%;border-collapse:collapse;margin:11px 0;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top}
+th{background:#F7F2E6;font-weight:700;white-space:nowrap}
+td.t{white-space:nowrap;color:var(--navy);font-weight:700;font-variant-numeric:tabular-nums}
+ul{margin:7px 0;padding-left:20px}
+li{margin:4px 0}
+code{background:#F2EDE0;border-radius:5px;padding:1px 6px;font-size:13px;
+font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:var(--navy);color:#EDE6D6;border-radius:10px;padding:13px 15px;overflow-x:auto;
+font-size:12.5px;line-height:1.6;font-family:ui-monospace,Menlo,Consolas,monospace}
+.tag{display:inline-block;background:var(--navy);color:#fff;border-radius:6px;
+padding:2px 8px;font-size:11.5px;font-weight:700;margin-right:6px}
+.tag.g{background:var(--green)}.tag.r{background:var(--coral)}.tag.y{background:var(--yellowD)}
+.s{color:var(--muted);font-size:13px}
+.chk{list-style:none;padding-left:0}
+.chk li{padding-left:26px;position:relative}
+.chk li:before{content:"☐";position:absolute;left:4px;top:0;color:var(--navy);font-size:15px}
+hr{border:0;border-top:1px dashed var(--line);margin:26px 0}
+@media print{body{background:#fff}.card{break-inside:avoid}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<h1>해커톤 당일 워크플로우</h1>
+<p>2026 GBSA AI 해커톤 · 10월 2일 수원컨벤션센터 · 과업지시서 초안 생성기</p>
+</header>
+
+<div class="card warn">
+<b>규칙이 먼저입니다.</b> 「사전에 설계·개발한 사실이 확인될 경우 실격」. 지급 노트북·지급 계정에서
+당일 작성해야 합니다. 예외는 <b>더미데이터</b>뿐입니다. 아래 경계를 지키면 문제없습니다.
+</div>
+
+<h2><span class="n">1</span>반입 경계</h2>
+
+<div class="card ok">
+<h3><span class="tag g">가져간다</span> 데이터와 머릿속</h3>
+<ul>
+<li><b>더미데이터 꾸러미</b> — 나라장터 공개 공고에서 받은 과업지시서 발췌, 경과원 서식 파일, 입력 예시</li>
+<li><b>기술적 사실</b> — 어느 API가 무엇을 주는지, 어떤 라이브러리가 있는지. 외워 가거나 당일 다시 찾으면 되는 공개 정보</li>
+<li><b>업무 지식</b> — 과업지시서에 어떤 항목이 들어가는지, 경과원이 어떤 용역을 발주하는지</li>
+</ul>
+</div>
+
+<div class="card no">
+<h3><span class="tag r">안 가져간다</span> 만들어 둔 것 일체</h3>
+<ul>
+<li>초안생성기 HTML, <code>과업지시서.py</code>, 그 안의 코드 조각</li>
+<li><b>항목 사전 27개와 기본 문안</b> — 문서에서 뽑아 정리한 것이라 데이터처럼 보이지만, 이건 <b>설계물</b>입니다. 당일 같은 방법으로 다시 뽑습니다(10분이면 됩니다)</li>
+<li>프롬프트 원문을 적어 간 메모</li>
+</ul>
+<p class="s" style="margin:9px 0 0">애매하면 안 가져가는 쪽으로. 다시 만드는 데 드는 시간보다 실격이 훨씬 비쌉니다.</p>
+</div>
+
+<h2><span class="n">2</span>당일 순서</h2>
+
+<p>MVP는 <b>둘</b>로 잡습니다. ①이 무너져도 ②만으로 시연이 됩니다.</p>
+
+<table>
+<thead><tr><th style="width:15%">시간</th><th style="width:30%">할 일</th><th>내용</th></tr></thead>
+<tbody>
+<tr><td class="t">~0:30</td><td>환경 확인</td>
+<td>파이썬·pip·GitHub 접속·나라장터 API 확인. <b>여기서 막히면 그때 계획을 바꿉니다</b> — 뒤로 갈수록 바꾸기 어렵습니다.</td></tr>
+<tr><td class="t">0:30~1:30</td><td><b>MVP ① 근거 수집</b></td>
+<td>나라장터에서 유사 공고를 찾아 첨부 과업지시서를 읽고, 항목별 빈도를 세어 보여 주는 화면. 망이 막히면 더미데이터로 대체.</td></tr>
+<tr><td class="t">1:30~2:30</td><td><b>MVP ② 초안 생성</b></td>
+<td>항목 사전을 만들고, 입력값과 근거로 문안을 채워 초안을 화면에 띄움.</td></tr>
+<tr><td class="t">2:30~3:30</td><td>한글 문서 출력</td>
+<td><code>pip install python-hwpx</code> → 경과원 서식을 열어 본문만 갈아끼움. <b>여유가 없으면 건너뜁니다.</b></td></tr>
+<tr><td class="t">3:30~</td><td>시연 준비</td>
+<td>입력 예시로 두세 번 돌려보고, 실패하는 경우를 미리 확인.</td></tr>
+</tbody>
+</table>
+
+<h2><span class="n">3</span>단계별 요령</h2>
+
+<h3>① 나라장터에서 근거 모으기</h3>
+<div class="card">
+<ul>
+<li>공공데이터포털에서 <b>조달청 나라장터 입찰공고정보서비스</b> 활용신청 — 자동 승인, 개발계정 하루 1,000회</li>
+<li>용역·물품·공사가 <b>각각 다른 오퍼레이션</b>. 기관명·공고명으로 거르려면 이름이 <code>PPSSrch</code>로 끝나는 쪽을 써야 합니다. 그냥 <code>getBidPblancListInfo…</code>는 필터를 조용히 무시합니다.</li>
+<li><b>조회 기간이 1개월을 넘으면 오류</b>가 납니다. 30일씩 잘라 동시에 던지세요.</li>
+<li>첨부파일 이름과 주소가 <code>ntceSpecFileNm1~10</code>, <code>ntceSpecDocUrl1~10</code>에 들어 있고, <b>CORS가 열려 있어 브라우저에서 바로 받아집니다.</b> 서버가 필요 없습니다.</li>
+<li>세분류가 3단계로 들어 있습니다. 전시 장치는 <code>72154099</code>, 행사 운영은 「기타사업지원서비스」로 흩어져 있어 <b>세분류만으로는 안 좁혀집니다</b> — 공고명 유사도를 같이 쓰세요.</li>
+</ul>
+</div>
+
+<h3>② 항목 사전 다시 만들기</h3>
+<div class="card">
+<p style="margin:0 0 7px">가져온 사전을 쓰지 않고 당일 뽑습니다. 방법은 간단합니다.</p>
+<ul>
+<li>받은 과업지시서들의 <b>문단 앞머리가 글머리표인 짧은 줄</b>을 모으면 그게 소제목입니다</li>
+<li>여러 문서에 공통으로 나오는 소제목을 세면 항목 사전이 됩니다</li>
+<li>한 문서의 소제목 하나에 여러 항목이 걸리지 않게, <b>섹션 하나에 항목 하나만</b> 배정하세요(안 그러면 근거가 엉킵니다)</li>
+</ul>
+<p class="s" style="margin:9px 0 0">경과원 행사 용역의 실제 항목은 대략 이렇게 나옵니다 — 행사 개요 / 참가자 모집·관리 /
+프로그램 기획·운영 / 장소 선정·공간 조성 / 인력 운영 / 안전·보건 / 홍보·모객 / 홍보물 /
+사후관리 / 보고 / 정산. 당일 세어 보면 같은 게 나올 겁니다.</p>
+</div>
+
+<h3>③ 한글 문서 만들기</h3>
+<div class="card">
+<ul>
+<li><code>pip install python-hwpx</code> — 한글 프로그램 없이 .hwpx를 읽고 씁니다(Apache-2.0)</li>
+<li><b>새로 그리지 말고 경과원 서식을 열어 본문만 갈아끼웁니다.</b> 글꼴·여백을 지정할 일이 없어집니다</li>
+<li>서식의 글머리 체계를 읽어 그대로 따라 쓰세요. 기관마다 다릅니다 — 경과원 단체관은 <code>❍ (항목명) 내용</code>, 스타트업서밋은 <code>□</code>+<code>-</code></li>
+<li>들여쓰기는 문단 설정이 아니라 <b>글자 앞 공백</b>으로 되어 있습니다</li>
+<li>본문을 지울 때 <b>쪽 나눔이 딸려 지워집니다</b> — 장 머리마다 다시 넣어야 합니다</li>
+</ul>
+</div>
+
+<div class="card no">
+<b>하지 말 것</b> — OWPML(한글 XML)을 손으로 쓰는 것. 제가 며칠 썼는데 글꼴 이름 한 글자 때문에
+계속 실패했습니다. 라이브러리를 쓰세요. <code>apply_paragraph_format</code>은 정의 없는 문단모양 번호를
+만들어 서식을 풀어 버리니 쓰지 마세요.
+</div>
+
+<h2><span class="n">4</span>막혔을 때</h2>
+
+<table>
+<thead><tr><th style="width:26%">상황</th><th>대처</th></tr></thead>
+<tbody>
+<tr><td><b>나라장터 접속 불가</b></td>
+<td>더미데이터 <code>근거_과업지시서_발췌.json</code>으로 진행. 「실제로는 API로 받지만 현장 망 제약으로 미리 받아 둔 것」이라고 밝히고 시연.</td></tr>
+<tr><td><b>pip 설치 불가</b></td>
+<td>한글 출력은 포기하고 <b>화면 초안 + 텍스트 복사</b>까지만. MVP ①②는 브라우저만으로 됩니다.</td></tr>
+<tr><td><b>한글 프로그램 없음</b></td>
+<td>문제없습니다. python-hwpx는 한글 없이 .hwpx를 만듭니다. 열어볼 수 없을 뿐입니다.</td></tr>
+<tr><td><b>AI 도구로 문안 생성 불가</b></td>
+<td>항목별 기본 문안을 당일 직접 써 넣습니다. 20분이면 됩니다. 「근거 기반」이라는 말은 그때 쓰지 마세요.</td></tr>
+<tr><td><b>시간이 모자람</b></td>
+<td>③을 버립니다. 항목 빈도표와 화면 초안만으로도 완결된 시연입니다.</td></tr>
+</tbody>
+</table>
+
+<h2><span class="n">5</span>더미데이터 꾸러미</h2>
+
+<table>
+<thead><tr><th style="width:36%">파일</th><th>쓰임</th></tr></thead>
+<tbody>
+<tr><td><code>근거_과업지시서_발췌.json</code></td>
+<td>경과원·서울경제진흥원 과업지시서 4건에서 뽑은 <b>208개 섹션</b>(소제목+본문). 망이 막히면 이것이 참조군을 대신합니다.</td></tr>
+<tr><td><code>입력_예시.json</code></td>
+<td>시연용 입력 3종 — 경기스타트업서밋(6.6억) / AI 글로벌 챌린지(3.6억) / 뒤셀도르프 단체관(0.93억)</td></tr>
+<tr><td><code>서식_경과원_스타트업서밋_제안요청서.hwpx</code></td>
+<td>행사 운영 서식. 나라장터 공개 첨부입니다.</td></tr>
+<tr><td><code>서식_경과원_단체관_제안요청서.hwpx</code></td>
+<td>전시 단체관 서식.</td></tr>
+</tbody>
+</table>
+
+<div class="card blue">
+<b>출처를 밝히고 쓰세요.</b> 전부 나라장터에 공개된 공고 첨부입니다. 「미리 준비한 더미데이터」라고
+말하는 데 아무 문제가 없고, 오히려 실제 문서를 근거로 삼았다는 점이 강점입니다.
+다만 문서 안에 담당자 실명이 들어 있으니 <b>화면에 띄울 때는 가리세요.</b>
+</div>
+
+<h2><span class="n">6</span>시연 3분</h2>
+<div class="card">
+<ol>
+<li><b>문제</b> — 경과원은 분기마다 40여 건의 과업지시서를 새로 씁니다. 비슷한 공고가 이미 나라장터에 있는데 매번 백지에서 시작합니다. <span class="s">(숫자는 <b>7</b>번 참조)</span></li>
+<li><b>입력</b> — 공고명·금액·기간·규모만 넣습니다</li>
+<li><b>근거</b> — 같은 유형 공고를 찾아 과업지시서를 읽고, <b>어느 항목이 몇 건에 나오는지</b> 보여 줍니다. 「우리 기관엔 없는데 다른 기관은 두는 항목」이 핵심입니다</li>
+<li><b>초안</b> — 항목별 문안이 채워진 초안, 문장마다 근거 번호</li>
+<li><b>문서</b> — 경과원 서식이 입혀진 .hwpx</li>
+</ol>
+<p class="s" style="margin:9px 0 0">③이 이 도구의 진짜 값어치입니다. 문장을 대신 써 주는 건 어느 AI나 하지만,
+<b>빠뜨린 조항을 짚어 주는 것</b>은 공고를 실제로 읽어야 됩니다.</p>
+</div>
+
+<h2><span class="n">7</span>말할 때 조심할 숫자</h2>
+<div class="card warn">
+<p style="margin:0 0 9px">기획서에 있던 <b>「최근 3개월 계약 관련 결재문서 1,116건」은 근거가 없습니다.</b> 빼세요.
+검증된 숫자는 이것들입니다.</p>
+<table style="margin:0">
+<tbody>
+<tr><td class="t">46건</td><td>용역·공사 <b>발주 품의</b> (두레이 기록물 대장, 2026.06.15~09.15)</td></tr>
+<tr><td class="t">27건</td><td>같은 기간 <b>나라장터 공고</b> (재공고 제외)</td></tr>
+<tr><td class="t">165건</td><td>최근 1년 경과원 입찰공고 · 343억원</td></tr>
+<tr><td class="t">42건</td><td>최근 1년 용역 80건 중 <b>행사·전시 운영</b> (53%, 132.9억)</td></tr>
+</tbody>
+</table>
+<p class="s" style="margin:9px 0 0">「분기 40여 건」이 안전한 표현입니다. 되물으면 위 두 숫자를 대면 됩니다.</p>
+</div>
+
+<h2><span class="n">8</span>전날까지 확인</h2>
+<div class="card">
+<ul class="chk">
+<li>지급 노트북에 <b>파이썬과 pip</b>가 되는지 (운영진 확인)</li>
+<li><b>GitHub·PyPI 접속</b>이 되는지 (운영진 확인)</li>
+<li><b>나라장터 API</b>를 지급 계정에서 쓸 수 있는지 — 개인 API 키 반입 가능 여부 (운영진 확인)</li>
+<li>더미데이터 반입 형태 — USB인지, 메일인지 (운영진 확인)</li>
+<li>제공 AI 도구가 ChatGPT인지 Claude인지 — 문안 생성 방식이 달라집니다</li>
+<li>더미데이터 꾸러미 4개 파일 준비</li>
+<li>팀명·3인 역할·발표자 정하기</li>
+</ul>
+</div>
+
+<hr>
+<p class="s">이 문서는 참고 메모입니다. 반입 가능 여부가 애매하면 운영진에게 먼저 물어보세요.</p>
+
+</div>
+</body>
+</html>
